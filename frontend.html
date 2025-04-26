@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aquaponics AI Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+            width: 50%;
+            margin: auto;
+        }
+        input {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Aquaponics AI Prediction</h2>
+        <form id="predictionForm">
+            <input type="number" step="any" id="temperature" placeholder="Temperature (°C)" required>
+            <input type="number" step="any" id="turbidity" placeholder="Turbidity (NTU)" required>
+            <input type="number" step="any" id="do" placeholder="Dissolved Oxygen (mg/L)" required>
+            <input type="number" step="any" id="ph" placeholder="PH Level" required>
+            <input type="number" step="any" id="ammonia" placeholder="Ammonia (g/ml)" required>
+            <input type="number" step="any" id="nitrate" placeholder="Nitrate (g/ml)" required>
+            <input type="number" step="any" id="population" placeholder="Fish Population" required>
+            <input type="number" step="any" id="fish_length" placeholder="Fish Length (cm)" required>
+            <input type="number" step="any" id="fish_weight" placeholder="Fish Weight (g)" required>
+            <input type="number" step="any" id="energy_cost" placeholder="Energy Cost (INR/hr)" required>
+            <button type="submit">Predict</button>
+        </form>
+        <h3 id="result"></h3>
+    </div>
+
+    <script>
+        document.getElementById("predictionForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            // Get input values and structure them correctly
+            const inputData = {
+                "Temperature": parseFloat(document.getElementById("temperature").value),
+                "Turbidity": parseFloat(document.getElementById("turbidity").value),
+                "Dissolved Oxygen": parseFloat(document.getElementById("do").value),
+                "PH": parseFloat(document.getElementById("ph").value),
+                "Ammonia": parseFloat(document.getElementById("ammonia").value),
+                "Nitrate": parseFloat(document.getElementById("nitrate").value),
+                "Fish Population": parseFloat(document.getElementById("population").value),
+                "Fish Length": parseFloat(document.getElementById("fish_length").value),
+                "Fish Weight": parseFloat(document.getElementById("fish_weight").value),
+                "Energy Cost": parseFloat(document.getElementById("energy_cost").value)
+            };
+
+            console.log("🚀 Sending Data to API:", inputData); // Debugging log
+
+            // Fetch Aerator Status
+            fetch("http://127.0.0.1:5000/predict_aerator", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(inputData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("✅ Aerator API Response:", data);
+                if (data.error) {
+                    document.getElementById("result").innerText = `❌ Error: ${data.error}`;
+                } else {
+                    document.getElementById("result").innerText = `Aerator Status: ${data.aerator_status === 1 ? 'ON' : 'OFF'}`;
+                }
+            })
+            .catch(error => {
+                console.error("❌ Aerator Fetch Error:", error);
+                document.getElementById("result").innerText = "Error fetching aerator prediction.";
+            });
+
+            // Fetch Pump Runtime Prediction
+            fetch("http://127.0.0.1:5000/predict_pump", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(inputData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("✅ Pump API Response:", data);
+                if (data.error) {
+                    document.getElementById("result").innerText = `❌ Error: ${data.error}`;
+                } else {
+                    document.getElementById("result").innerText += `, Pump Runtime: ${data.pump_runtime} min/hr`;
+                }
+            })
+            .catch(error => {
+                console.error("❌ Pump Fetch Error:", error);
+                document.getElementById("result").innerText = "Error fetching pump prediction.";
+            });
+        });
+    </script>
+</body>
+</html>
